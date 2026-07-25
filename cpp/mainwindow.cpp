@@ -224,6 +224,7 @@ int run_app(rust::Vec<rust::String> args)
     dataView->setReadOnly(true);
     dataView->setPlaceholderText("Data view");
     dataView->setFont(QFont("monospace"));
+    dataView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     splitter->addWidget(tree);
     splitter->addWidget(dataView);
