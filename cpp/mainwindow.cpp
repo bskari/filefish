@@ -6,7 +6,6 @@
 #include <QAction>
 #include <QApplication>
 #include <QFileDialog>
-#include <QFileInfo>
 #include <QFont>
 #include <QKeySequence>
 #include <QMainWindow>
@@ -15,6 +14,8 @@
 #include <QPlainTextEdit>
 #include <QSplitter>
 #include <QTreeWidget>
+
+#include <vector>
 
 namespace
 {
@@ -33,12 +34,21 @@ void openFile(QWidget *parent, QTreeWidget *tree, QPlainTextEdit *dataView)
         return;
     }
 
-    const QFileInfo info(path);
-
     tree->clear();
-    auto *root = new QTreeWidgetItem(tree, {"File", info.fileName()});
-    new QTreeWidgetItem(root, {"Path", info.absoluteFilePath()});
-    new QTreeWidgetItem(root, {"Size", QString("%1 bytes").arg(fileInfo.size)});
+
+    std::vector<QTreeWidgetItem *> items(fileInfo.blocks.size(), nullptr);
+    for (size_t i = 0; i < fileInfo.blocks.size(); ++i) {
+        const auto &block = fileInfo.blocks[i];
+        QTreeWidgetItem *parent = block.parent >= 0 ? items[block.parent] : tree->invisibleRootItem();
+        auto *item = new QTreeWidgetItem(parent, {QString::fromStdString(std::string(block.label))});
+        item->setData(0, Qt::UserRole, static_cast<quint64>(block.start));
+        item->setData(0, Qt::UserRole + 1, static_cast<quint64>(block.end));
+        if (!block.expandable) {
+            item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+        }
+        items[i] = item;
+    }
+
     tree->expandAll();
 
     dataView->setPlainText(QString::fromStdString(std::string(fileInfo.hex_dump)));
@@ -58,7 +68,8 @@ int run_app()
     auto *splitter = new QSplitter(&window);
 
     auto *tree = new QTreeWidget(splitter);
-    tree->setHeaderLabels({"Field", "Value"});
+    tree->setColumnCount(1);
+    tree->setHeaderHidden(true);
 
     auto *dataView = new QPlainTextEdit(splitter);
     dataView->setReadOnly(true);

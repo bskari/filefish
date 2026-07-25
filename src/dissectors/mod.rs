@@ -1,0 +1,77 @@
+mod elf;
+mod generic;
+
+#[derive(Clone, Copy)]
+pub struct ByteRange {
+    pub start: u64,
+    pub end: u64, // exclusive (half-open), like Rust's Range<u64>
+}
+
+impl ByteRange {
+    pub fn new(start: u64, end: u64) -> Self {
+        Self { start, end }
+    }
+}
+
+pub struct Block {
+    pub label: String,
+    pub range: ByteRange,
+    pub expandable: bool,
+    pub children: Vec<Block>,
+}
+
+impl Block {
+    pub fn leaf(label: impl Into<String>, range: ByteRange) -> Self {
+        Self {
+            label: label.into(),
+            range,
+            expandable: false,
+            children: Vec::new(),
+        }
+    }
+
+    pub fn node(label: impl Into<String>, range: ByteRange, children: Vec<Block>) -> Self {
+        Self {
+            label: label.into(),
+            range,
+            expandable: true,
+            children,
+        }
+    }
+
+    pub fn node_collapsed(label: impl Into<String>, range: ByteRange, children: Vec<Block>) -> Self {
+        Self {
+            label: label.into(),
+            range,
+            expandable: false,
+            children,
+        }
+    }
+}
+
+pub trait Dissector {
+    fn name(&self) -> &'static str;
+    fn matches(&self, data: &[u8]) -> bool;
+    fn dissect(&self, data: &[u8]) -> Vec<Block>;
+}
+
+fn dissectors() -> Vec<Box<dyn Dissector>> {
+    vec![Box::new(elf::ElfDissector)]
+}
+
+fn matched_dissector(data: &[u8]) -> Box<dyn Dissector> {
+    for dissector in dissectors() {
+        if dissector.matches(data) {
+            return dissector;
+        }
+    }
+    Box::new(generic::GenericDissector)
+}
+
+pub fn identify(data: &[u8]) -> &'static str {
+    matched_dissector(data).name()
+}
+
+pub fn dissect(data: &[u8]) -> Vec<Block> {
+    matched_dissector(data).dissect(data)
+}
