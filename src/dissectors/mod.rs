@@ -1,5 +1,6 @@
 mod elf;
 mod generic;
+mod wav;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ByteRange {
@@ -47,7 +48,7 @@ pub trait Dissector {
 }
 
 fn dissectors() -> Vec<Box<dyn Dissector>> {
-    vec![Box::new(elf::ElfDissector)]
+    vec![Box::new(elf::ElfDissector), Box::new(wav::WavDissector)]
 }
 
 fn matched_dissector(data: &[u8]) -> Box<dyn Dissector> {
