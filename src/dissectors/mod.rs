@@ -1,5 +1,6 @@
 mod bmp;
 mod elf;
+mod flac;
 mod generic;
 mod gif;
 mod ico;
@@ -77,7 +78,12 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(pe::PeDissector),
         Box::new(macho::MachoDissector),
         Box::new(wav::WavDissector),
+<<<<<<< HEAD
         Box::new(ogg::OggDissector),
+||||||| parent of cb354f6 (Add FLAC dissector)
+=======
+        Box::new(flac::FlacDissector),
+>>>>>>> cb354f6 (Add FLAC dissector)
         Box::new(webp::WebpDissector),
         Box::new(png::PngDissector),
         Box::new(bmp::BmpDissector),
