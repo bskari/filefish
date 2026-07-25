@@ -2,6 +2,7 @@ use super::{Block, ByteRange, Dissector};
 
 const MAGIC: &[u8] = &[0x1f, 0x8b];
 
+#[allow(dead_code)]
 const FTEXT: u8 = 0x01;
 const FHCRC: u8 = 0x02;
 const FEXTRA: u8 = 0x04;
