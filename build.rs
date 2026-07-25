@@ -1,4 +1,7 @@
 fn main() {
+    println!("cargo:rerun-if-changed=cpp/mainwindow.cpp");
+    println!("cargo:rerun-if-changed=cpp/mainwindow.h");
+
     // Force Qt6, since both Qt5 and Qt6 dev packages are installed and
     // `qmake` on PATH defaults to Qt5.
     unsafe {

@@ -70,6 +70,20 @@ public:
         setExtraSelections(selections);
     }
 
+    // Scrolls the view so the line containing `start` is visible, but only
+    // if it isn't already on screen (mirrors QTreeWidget::scrollToItem).
+    void scrollToRangeIfNeeded(quint64 start)
+    {
+        QTextBlock block = document()->findBlockByNumber(static_cast<int>(start / BYTES_PER_LINE));
+        if (!block.isValid() || isBlockVisible(block)) {
+            return;
+        }
+
+        QTextCursor cursor(block);
+        setTextCursor(cursor);
+        centerCursor();
+    }
+
 protected:
     void mousePressEvent(QMouseEvent *event) override
     {
@@ -96,6 +110,12 @@ protected:
     }
 
 private:
+    bool isBlockVisible(const QTextBlock &block) const
+    {
+        const QRectF rect = blockBoundingGeometry(block).translated(contentOffset());
+        return rect.bottom() >= 0 && rect.top() <= viewport()->rect().height();
+    }
+
     static QTextEdit::ExtraSelection makeSelection(const QTextBlock &block, int blockLen, int fromCol, int toCol,
                                                      const QColor &color)
     {
@@ -222,6 +242,7 @@ int run_app(rust::Vec<rust::String> args)
         const quint64 start = current->data(0, Qt::UserRole).toULongLong();
         const quint64 end = current->data(0, Qt::UserRole + 1).toULongLong();
         dataView->highlightRange(start, end);
+        dataView->scrollToRangeIfNeeded(start);
     });
 
     dataView->onByteClicked = [tree, dataView, &fileView](quint64 offset) {

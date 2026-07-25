@@ -1,6 +1,15 @@
+mod bmp;
 mod elf;
 mod generic;
+mod gif;
+mod jpeg;
+mod macho;
+mod pe;
+mod png;
+mod tar;
 mod wav;
+mod webp;
+mod zip;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ByteRange {
@@ -47,6 +56,11 @@ impl Block {
         self.default_expanded = true;
         self
     }
+
+    pub fn expanded_if(mut self, condition: bool) -> Self {
+        self.default_expanded = condition;
+        self
+    }
 }
 
 pub trait Dissector {
@@ -56,7 +70,19 @@ pub trait Dissector {
 }
 
 fn dissectors() -> Vec<Box<dyn Dissector>> {
-    vec![Box::new(elf::ElfDissector), Box::new(wav::WavDissector)]
+    vec![
+        Box::new(elf::ElfDissector),
+        Box::new(pe::PeDissector),
+        Box::new(macho::MachoDissector),
+        Box::new(wav::WavDissector),
+        Box::new(webp::WebpDissector),
+        Box::new(png::PngDissector),
+        Box::new(bmp::BmpDissector),
+        Box::new(zip::ZipDissector),
+        Box::new(tar::TarDissector),
+        Box::new(gif::GifDissector),
+        Box::new(jpeg::JpegDissector),
+    ]
 }
 
 fn matched_dissector(data: &[u8]) -> Box<dyn Dissector> {
