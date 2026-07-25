@@ -5,6 +5,7 @@ mod gif;
 mod ico;
 mod jpeg;
 mod macho;
+mod ogg;
 mod pe;
 mod png;
 mod tar;
@@ -76,6 +77,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(pe::PeDissector),
         Box::new(macho::MachoDissector),
         Box::new(wav::WavDissector),
+        Box::new(ogg::OggDissector),
         Box::new(webp::WebpDissector),
         Box::new(png::PngDissector),
         Box::new(bmp::BmpDissector),
