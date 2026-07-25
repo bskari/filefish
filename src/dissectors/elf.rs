@@ -146,6 +146,7 @@ fn identification_block(data: &[u8]) -> Block {
             Block::leaf("Padding", ByteRange::new(8, EI_NIDENT as u64)),
         ],
     )
+    .expanded()
 }
 
 fn header_block(data: &[u8], is_64_bit: bool, little_endian: bool) -> Option<Block> {
@@ -216,11 +217,14 @@ fn header_block(data: &[u8], is_64_bit: bool, little_endian: bool) -> Option<Blo
         52
     };
 
-    Some(Block::node(
-        format!("Header: {}", class_name(data[EI_CLASS])),
-        ByteRange::new(16, end),
-        fields,
-    ))
+    Some(
+        Block::node(
+            format!("Header: {}", class_name(data[EI_CLASS])),
+            ByteRange::new(16, end),
+            fields,
+        )
+        .expanded(),
+    )
 }
 
 fn program_header_info(data: &[u8], is_64_bit: bool, little_endian: bool) -> Option<(u64, u64, u64)> {

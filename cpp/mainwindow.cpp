@@ -167,6 +167,8 @@ void loadFile(const QString &path, QTreeWidget *tree, HexDataView *dataView, Fil
         item->setData(0, Qt::UserRole + 1, static_cast<quint64>(block.end));
         if (!block.expandable) {
             item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+        } else if (block.default_expanded) {
+            item->setExpanded(true);
         }
         fileView.items[i] = item;
     }

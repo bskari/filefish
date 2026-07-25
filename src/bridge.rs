@@ -16,6 +16,7 @@ pub mod ffi {
         start: u64,
         end: u64,
         expandable: bool,
+        default_expanded: bool,
     }
 
     unsafe extern "C++" {
@@ -38,6 +39,7 @@ fn flatten(blocks: Vec<Block>, parent: i32, out: &mut Vec<ffi::FfiBlock>) {
             start: block.range.start,
             end: block.range.end,
             expandable: block.expandable,
+            default_expanded: block.default_expanded,
         });
         flatten(block.children, index, out);
     }

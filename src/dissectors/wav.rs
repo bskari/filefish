@@ -66,6 +66,7 @@ fn riff_header_block(data: &[u8]) -> Block {
             Block::leaf("Format: WAVE", ByteRange::new(8, 12)),
         ],
     )
+    .expanded()
 }
 
 fn fmt_chunk_block(data: &[u8], offset: u64, size: u64) -> Block {
@@ -143,11 +144,14 @@ fn chunk_block(data: &[u8], offset: u64) -> Option<Block> {
         let mut fmt = fmt_chunk_block(data, data_start, size);
         let mut children = header;
         children.append(&mut fmt.children);
-        return Some(Block::node(
-            format!("Chunk: {id}"),
-            ByteRange::new(offset, padded_end),
-            children,
-        ));
+        return Some(
+            Block::node(
+                format!("Chunk: {id}"),
+                ByteRange::new(offset, padded_end),
+                children,
+            )
+            .expanded(),
+        );
     }
 
     let mut children = header;

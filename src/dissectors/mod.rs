@@ -18,6 +18,7 @@ pub struct Block {
     pub label: String,
     pub range: ByteRange,
     pub expandable: bool,
+    pub default_expanded: bool,
     pub children: Vec<Block>,
 }
 
@@ -27,6 +28,7 @@ impl Block {
             label: label.into(),
             range,
             expandable: false,
+            default_expanded: false,
             children: Vec::new(),
         }
     }
@@ -36,8 +38,14 @@ impl Block {
             label: label.into(),
             range,
             expandable: true,
+            default_expanded: false,
             children,
         }
+    }
+
+    pub fn expanded(mut self) -> Self {
+        self.default_expanded = true;
+        self
     }
 }
 
