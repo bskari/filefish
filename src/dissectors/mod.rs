@@ -14,6 +14,7 @@ mod macho;
 mod ogg;
 mod pe;
 mod png;
+mod sqlite;
 mod tar;
 mod wav;
 mod webp;
@@ -92,7 +93,12 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(webp::WebpDissector),
         Box::new(png::PngDissector),
         Box::new(bmp::BmpDissector),
+<<<<<<< HEAD
         Box::new(ico::IcoDissector),
+||||||| parent of d76c36f (Add SQLite dissector)
+=======
+        Box::new(sqlite::SqliteDissector),
+>>>>>>> d76c36f (Add SQLite dissector)
         Box::new(zip::ZipDissector),
         Box::new(tar::TarDissector),
         Box::new(gif::GifDissector),
