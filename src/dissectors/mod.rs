@@ -2,6 +2,7 @@ mod bmp;
 mod elf;
 mod generic;
 mod gif;
+mod ico;
 mod jpeg;
 mod macho;
 mod pe;
@@ -78,6 +79,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(webp::WebpDissector),
         Box::new(png::PngDissector),
         Box::new(bmp::BmpDissector),
+        Box::new(ico::IcoDissector),
         Box::new(zip::ZipDissector),
         Box::new(tar::TarDissector),
         Box::new(gif::GifDissector),
