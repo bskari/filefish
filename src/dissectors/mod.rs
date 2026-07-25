@@ -1,7 +1,7 @@
 mod elf;
 mod generic;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ByteRange {
     pub start: u64,
     pub end: u64, // exclusive (half-open), like Rust's Range<u64>
@@ -35,15 +35,6 @@ impl Block {
             label: label.into(),
             range,
             expandable: true,
-            children,
-        }
-    }
-
-    pub fn node_collapsed(label: impl Into<String>, range: ByteRange, children: Vec<Block>) -> Self {
-        Self {
-            label: label.into(),
-            range,
-            expandable: false,
             children,
         }
     }

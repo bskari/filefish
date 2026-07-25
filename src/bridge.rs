@@ -21,7 +21,7 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("mainwindow.h");
 
-        fn run_app() -> i32;
+        fn run_app(args: Vec<String>) -> i32;
     }
 
     extern "Rust" {
