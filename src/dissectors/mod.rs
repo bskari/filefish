@@ -3,7 +3,12 @@ mod elf;
 mod flac;
 mod generic;
 mod gif;
+<<<<<<< HEAD
 mod ico;
+||||||| parent of 52b3df2 (Add Gzip dissector)
+=======
+mod gzip;
+>>>>>>> 52b3df2 (Add Gzip dissector)
 mod jpeg;
 mod macho;
 mod ogg;
@@ -92,6 +97,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(tar::TarDissector),
         Box::new(gif::GifDissector),
         Box::new(jpeg::JpegDissector),
+        Box::new(gzip::GzipDissector),
     ]
 }
 
