@@ -3,12 +3,8 @@ mod elf;
 mod flac;
 mod generic;
 mod gif;
-<<<<<<< HEAD
-mod ico;
-||||||| parent of 52b3df2 (Add Gzip dissector)
-=======
 mod gzip;
->>>>>>> 52b3df2 (Add Gzip dissector)
+mod ico;
 mod jpeg;
 mod macho;
 mod ogg;
@@ -84,21 +80,13 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(pe::PeDissector),
         Box::new(macho::MachoDissector),
         Box::new(wav::WavDissector),
-<<<<<<< HEAD
         Box::new(ogg::OggDissector),
-||||||| parent of cb354f6 (Add FLAC dissector)
-=======
         Box::new(flac::FlacDissector),
->>>>>>> cb354f6 (Add FLAC dissector)
         Box::new(webp::WebpDissector),
         Box::new(png::PngDissector),
         Box::new(bmp::BmpDissector),
-<<<<<<< HEAD
         Box::new(ico::IcoDissector),
-||||||| parent of d76c36f (Add SQLite dissector)
-=======
         Box::new(sqlite::SqliteDissector),
->>>>>>> d76c36f (Add SQLite dissector)
         Box::new(zip::ZipDissector),
         Box::new(tar::TarDissector),
         Box::new(gif::GifDissector),
