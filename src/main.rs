@@ -1,5 +1,4 @@
 mod bridge;
-mod dissect;
 mod dissectors;
 
 fn main() {

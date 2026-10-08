@@ -3,20 +3,22 @@
 #include "filefish/src/bridge.cxx.h"
 #include "rust/cxx.h"
 
+#include <QAbstractScrollArea>
 #include <QAction>
 #include <QApplication>
+#include <QByteArray>
 #include <QColor>
 #include <QFileDialog>
 #include <QFont>
+#include <QFontMetrics>
 #include <QKeySequence>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMouseEvent>
-#include <QPlainTextEdit>
+#include <QPainter>
+#include <QScrollBar>
 #include <QSplitter>
-#include <QTextBlock>
-#include <QTextCursor>
 #include <QTreeWidget>
 
 #include <algorithm>
@@ -27,75 +29,135 @@ namespace
 {
 
 constexpr int BYTES_PER_LINE = 16;
-constexpr int HEX_START = 10;                            // "00000000  " prefix
-constexpr int HEX_CHARS_PER_BYTE = 3;                     // "xx "
+constexpr int HEX_START = 10;                                                    // "00000000  " prefix
+constexpr int HEX_CHARS_PER_BYTE = 3;                                            // "xx "
 constexpr int ASCII_START = HEX_START + BYTES_PER_LINE * HEX_CHARS_PER_BYTE + 1; // one space separates hex from ascii
 
-// A QPlainTextEdit that knows the fixed hex-dump layout produced by
-// dissect::hex_dump, so it can map mouse clicks back to byte offsets and
-// highlight byte ranges in both the hex and ascii columns.
-class HexDataView : public QPlainTextEdit
+// A QAbstractScrollArea that renders only the visible lines of a hex dump on
+// demand, so opening large files doesn't stall building a document up front.
+class HexDataView : public QAbstractScrollArea
 {
 public:
-    explicit HexDataView(QWidget *parent = nullptr) : QPlainTextEdit(parent) {}
+    explicit HexDataView(QWidget *parent = nullptr) : QAbstractScrollArea(parent)
+    {
+        setFont(QFont("monospace"));
+        verticalScrollBar()->setSingleStep(1);
+    }
 
     std::function<void(quint64)> onByteClicked;
 
-    void highlightRange(quint64 start, quint64 end)
+    void setData(rust::Vec<uint8_t> data)
     {
-        QList<QTextEdit::ExtraSelection> selections;
-        if (end > start) {
-            const QColor color(100, 150, 240, 120);
-
-            const quint64 firstLine = start / BYTES_PER_LINE;
-            const quint64 lastLine = (end - 1) / BYTES_PER_LINE;
-
-            for (quint64 line = firstLine; line <= lastLine; ++line) {
-                QTextBlock block = document()->findBlockByNumber(static_cast<int>(line));
-                if (!block.isValid()) {
-                    continue;
-                }
-
-                const quint64 lineStart = line * BYTES_PER_LINE;
-                const int startByte = static_cast<int>(std::max(start, lineStart) - lineStart);
-                const int endByte = static_cast<int>(std::min(end, lineStart + BYTES_PER_LINE) - lineStart);
-                const int blockLen = block.length() - 1; // exclude the paragraph separator
-
-                selections.append(makeSelection(block, blockLen, HEX_START + startByte * HEX_CHARS_PER_BYTE,
-                                                 HEX_START + endByte * HEX_CHARS_PER_BYTE - 1, color));
-                selections.append(makeSelection(block, blockLen, ASCII_START + startByte,
-                                                 ASCII_START + endByte, color));
-            }
-        }
-        setExtraSelections(selections);
+        m_data = QByteArray(reinterpret_cast<const char *>(data.data()), static_cast<qsizetype>(data.size()));
+        verticalScrollBar()->setValue(0);
+        updateScrollBars();
+        viewport()->update();
     }
 
-    // Scrolls the view so the line containing `start` is visible, but only
-    // if it isn't already on screen (mirrors QTreeWidget::scrollToItem).
+    void highlightRange(quint64 start, quint64 end)
+    {
+        m_hlStart = start;
+        m_hlEnd = end;
+        viewport()->update();
+    }
+
+    // Scrolls so the line containing `start` is visible, but only if it isn't
+    // already on screen.
     void scrollToRangeIfNeeded(quint64 start)
     {
-        QTextBlock block = document()->findBlockByNumber(static_cast<int>(start / BYTES_PER_LINE));
-        if (!block.isValid() || isBlockVisible(block)) {
+        const int targetLine = static_cast<int>(start / BYTES_PER_LINE);
+        const int firstVisible = verticalScrollBar()->value();
+        const int vis = visibleLineCount();
+        if (targetLine >= firstVisible && targetLine < firstVisible + vis) {
             return;
         }
-
-        QTextCursor cursor(block);
-        setTextCursor(cursor);
-        centerCursor();
+        verticalScrollBar()->setValue(targetLine - vis / 2);
     }
 
 protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter painter(viewport());
+        painter.setFont(font());
+
+        const QFontMetrics fm(font());
+        const int lineH = fm.height();
+        const int ascent = fm.ascent();
+
+        const int firstLine = verticalScrollBar()->value();
+        const int lastLine = std::min(firstLine + visibleLineCount() + 1, lineCount());
+
+        for (int line = firstLine; line < lastLine; ++line) {
+            const int y = (line - firstLine) * lineH;
+
+            const quint64 byteStart = static_cast<quint64>(line) * BYTES_PER_LINE;
+            const quint64 byteEnd = std::min(byteStart + BYTES_PER_LINE, static_cast<quint64>(m_data.size()));
+            const int nBytes = static_cast<int>(byteEnd - byteStart);
+
+            // Build the line text first so we can measure exact pixel positions.
+            QString text;
+            text.reserve(ASCII_START + BYTES_PER_LINE + 2);
+            text = QString::asprintf("%08llx  ", static_cast<unsigned long long>(byteStart));
+            for (int i = 0; i < nBytes; ++i) {
+                text += QString::asprintf("%02x ", static_cast<uint8_t>(m_data[static_cast<qsizetype>(byteStart) + i]));
+            }
+            for (int i = nBytes; i < BYTES_PER_LINE; ++i) {
+                text += "   ";
+            }
+            text += ' ';
+            for (int i = 0; i < nBytes; ++i) {
+                const uint8_t b = static_cast<uint8_t>(m_data[static_cast<qsizetype>(byteStart) + i]);
+                text += (b >= 0x20 && b < 0x7f) ? QChar(b) : QChar('.');
+            }
+
+            // Draw highlight backgrounds using fm.horizontalAdvance to get pixel
+            // positions that exactly match what drawText renders, avoiding any
+            // per-character width drift from col * charW approximations.
+            if (m_hlEnd > m_hlStart) {
+                const quint64 lineHlStart = std::max(m_hlStart, byteStart);
+                const quint64 lineHlEnd = std::min(m_hlEnd, byteEnd);
+                if (lineHlStart < lineHlEnd) {
+                    const QColor color(100, 150, 240, 120);
+                    const int sb = static_cast<int>(lineHlStart - byteStart);
+                    const int eb = static_cast<int>(lineHlEnd - byteStart);
+
+                    const int xHexS = fm.horizontalAdvance(text.left(HEX_START + sb * HEX_CHARS_PER_BYTE));
+                    const int xHexE = fm.horizontalAdvance(text.left(HEX_START + eb * HEX_CHARS_PER_BYTE - 1));
+                    const int xAscS = fm.horizontalAdvance(text.left(ASCII_START + sb));
+                    const int xAscE = fm.horizontalAdvance(text.left(ASCII_START + eb));
+
+                    painter.fillRect(xHexS, y, xHexE - xHexS, lineH, color);
+                    painter.fillRect(xAscS, y, xAscE - xAscS, lineH, color);
+                }
+            }
+
+            painter.drawText(0, y + ascent, text);
+        }
+    }
+
+    void resizeEvent(QResizeEvent *event) override
+    {
+        QAbstractScrollArea::resizeEvent(event);
+        updateScrollBars();
+    }
+
+    void scrollContentsBy(int, int) override
+    {
+        viewport()->update();
+    }
+
     void mousePressEvent(QMouseEvent *event) override
     {
-        QPlainTextEdit::mousePressEvent(event);
-
         if (!onByteClicked) {
             return;
         }
 
-        const QTextCursor cursor = cursorForPosition(event->pos());
-        const int line = cursor.blockNumber();
-        const int col = cursor.positionInBlock();
+        const QFontMetrics fm(font());
+        const int charW = fm.horizontalAdvance(QChar('0'));
+        const int lineH = fm.height();
+
+        const int line = verticalScrollBar()->value() + event->pos().y() / lineH;
+        const int col = event->pos().x() / charW;
 
         int byteIndex = -1;
         if (col >= HEX_START && col < ASCII_START) {
@@ -104,32 +166,36 @@ protected:
             byteIndex = col - ASCII_START;
         }
 
-        if (byteIndex >= 0) {
-            onByteClicked(static_cast<quint64>(line) * BYTES_PER_LINE + byteIndex);
+        if (byteIndex >= 0 && byteIndex < BYTES_PER_LINE) {
+            const quint64 offset = static_cast<quint64>(line) * BYTES_PER_LINE + static_cast<quint64>(byteIndex);
+            if (offset < static_cast<quint64>(m_data.size())) {
+                onByteClicked(offset);
+            }
         }
     }
 
 private:
-    bool isBlockVisible(const QTextBlock &block) const
+    QByteArray m_data;
+    quint64 m_hlStart = 0;
+    quint64 m_hlEnd = 0;
+
+    int lineCount() const
     {
-        const QRectF rect = blockBoundingGeometry(block).translated(contentOffset());
-        return rect.bottom() >= 0 && rect.top() <= viewport()->rect().height();
+        return static_cast<int>((m_data.size() + BYTES_PER_LINE - 1) / BYTES_PER_LINE);
     }
 
-    static QTextEdit::ExtraSelection makeSelection(const QTextBlock &block, int blockLen, int fromCol, int toCol,
-                                                     const QColor &color)
+    int visibleLineCount() const
     {
-        fromCol = std::clamp(fromCol, 0, blockLen);
-        toCol = std::clamp(toCol, 0, blockLen);
+        const QFontMetrics fm(font());
+        return viewport()->height() / fm.height();
+    }
 
-        QTextCursor cursor(block);
-        cursor.setPosition(block.position() + fromCol);
-        cursor.setPosition(block.position() + toCol, QTextCursor::KeepAnchor);
-
-        QTextEdit::ExtraSelection selection;
-        selection.cursor = cursor;
-        selection.format.setBackground(color);
-        return selection;
+    void updateScrollBars()
+    {
+        const int total = lineCount();
+        const int visible = visibleLineCount();
+        verticalScrollBar()->setRange(0, std::max(0, total - visible));
+        verticalScrollBar()->setPageStep(visible);
     }
 };
 
@@ -193,7 +259,7 @@ void loadFile(const QString &path, QTreeWidget *tree, HexDataView *dataView, Fil
         fileView.items[i] = item;
     }
 
-    dataView->setPlainText(QString::fromStdString(std::string(fileInfo.hex_dump)));
+    dataView->setData(std::move(fileInfo.data));
     dataView->highlightRange(0, 0);
 }
 
@@ -221,10 +287,6 @@ int run_app(rust::Vec<rust::String> args)
     tree->setHeaderHidden(true);
 
     auto *dataView = new HexDataView(splitter);
-    dataView->setReadOnly(true);
-    dataView->setPlaceholderText("Data view");
-    dataView->setFont(QFont("monospace"));
-    dataView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     splitter->addWidget(tree);
     splitter->addWidget(dataView);

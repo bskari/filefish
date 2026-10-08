@@ -1,4 +1,3 @@
-use crate::dissect;
 use crate::dissectors::{self, Block};
 
 #[cxx::bridge]
@@ -6,7 +5,7 @@ pub mod ffi {
     struct FileInfo {
         size: u64,
         file_type: String,
-        hex_dump: String,
+        data: Vec<u8>,
         blocks: Vec<FfiBlock>,
     }
 
@@ -54,7 +53,7 @@ fn dissect_file(path: &str) -> Result<ffi::FileInfo, String> {
     Ok(ffi::FileInfo {
         size: data.len() as u64,
         file_type: dissectors::identify(&data).to_string(),
-        hex_dump: dissect::hex_dump(&data),
+        data,
         blocks,
     })
 }
