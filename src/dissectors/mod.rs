@@ -7,6 +7,7 @@ mod gzip;
 mod ico;
 mod jpeg;
 mod macho;
+mod mp3;
 mod mp4;
 mod ogg;
 mod pe;
@@ -93,6 +94,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(tar::TarDissector),
         Box::new(gif::GifDissector),
         Box::new(jpeg::JpegDissector),
+        Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
     ]
 }
