@@ -16,6 +16,7 @@ mod sqlite;
 mod tar;
 mod wav;
 mod webp;
+mod xz;
 mod zip;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -91,6 +92,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(ico::IcoDissector),
         Box::new(sqlite::SqliteDissector),
         Box::new(zip::ZipDissector),
+        Box::new(xz::XzDissector),
         Box::new(tar::TarDissector),
         Box::new(gif::GifDissector),
         Box::new(jpeg::JpegDissector),
