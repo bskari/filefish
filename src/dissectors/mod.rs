@@ -16,6 +16,7 @@ mod midi;
 mod mp3;
 mod mp4;
 mod ne;
+mod nro;
 mod ogg;
 mod pdf;
 mod pe;
@@ -102,6 +103,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(java_class::JavaClassDissector),
         Box::new(wasm::WasmDissector),
         Box::new(rpm::RpmDissector),
+        Box::new(nro::NroDissector),
         Box::new(wav::WavDissector),
         Box::new(midi::MidiDissector),
         Box::new(mp4::Mp4Dissector),
