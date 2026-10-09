@@ -1,6 +1,7 @@
 mod amiga_hunk;
 mod atari_prg;
 mod bmp;
+mod bpg;
 mod bzip2;
 mod dex;
 mod dol;
@@ -118,6 +119,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(matroska::MatroskaDissector),
         Box::new(webp::WebpDissector),
         Box::new(png::PngDissector),
+        Box::new(bpg::BpgDissector),
         Box::new(bmp::BmpDissector),
         // DOL has no magic, but nearly every DOL starts with 00 00 01 00 (text 0
         // at offset 0x100), which is also the ICO magic. DOL's structural check
