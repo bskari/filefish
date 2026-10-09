@@ -9,6 +9,7 @@ mod ico;
 mod java_class;
 mod jpeg;
 mod macho;
+mod matroska;
 mod mp3;
 mod mp4;
 mod ogg;
@@ -94,6 +95,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(mp4::Mp4Dissector),
         Box::new(ogg::OggDissector),
         Box::new(flac::FlacDissector),
+        Box::new(matroska::MatroskaDissector),
         Box::new(webp::WebpDissector),
         Box::new(png::PngDissector),
         Box::new(bmp::BmpDissector),
