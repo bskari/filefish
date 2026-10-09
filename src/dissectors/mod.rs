@@ -10,6 +10,7 @@ mod gzip;
 mod ico;
 mod java_class;
 mod jpeg;
+mod lx;
 mod macho;
 mod matroska;
 mod midi;
@@ -98,6 +99,8 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(elf::ElfDissector),
         Box::new(pe::PeDissector),
         Box::new(ne::NeDissector),
+        Box::new(lx::LeDissector),
+        Box::new(lx::LxDissector),
         Box::new(macho::MachoDissector),
         Box::new(dex::DexDissector),
         Box::new(java_class::JavaClassDissector),
