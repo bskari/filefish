@@ -19,6 +19,7 @@ mod png;
 mod pyc;
 mod psd;
 mod sevenzip;
+mod rpm;
 mod sqlite;
 mod swf;
 mod tar;
@@ -94,6 +95,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(dex::DexDissector),
         Box::new(java_class::JavaClassDissector),
         Box::new(wasm::WasmDissector),
+        Box::new(rpm::RpmDissector),
         Box::new(wav::WavDissector),
         Box::new(mp4::Mp4Dissector),
         Box::new(ogg::OggDissector),
