@@ -10,6 +10,7 @@ mod macho;
 mod mp3;
 mod mp4;
 mod ogg;
+mod pdf;
 mod pe;
 mod png;
 mod sqlite;
@@ -96,6 +97,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(jpeg::JpegDissector),
         Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
+        Box::new(pdf::PdfDissector),
     ]
 }
 
