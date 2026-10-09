@@ -5,6 +5,7 @@ mod generic;
 mod gif;
 mod gzip;
 mod ico;
+mod java_class;
 mod jpeg;
 mod macho;
 mod mp3;
@@ -81,6 +82,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(elf::ElfDissector),
         Box::new(pe::PeDissector),
         Box::new(macho::MachoDissector),
+        Box::new(java_class::JavaClassDissector),
         Box::new(wav::WavDissector),
         Box::new(mp4::Mp4Dissector),
         Box::new(ogg::OggDissector),
