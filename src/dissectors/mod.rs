@@ -32,6 +32,7 @@ mod sqlite;
 mod swf;
 mod tar;
 mod wasm;
+mod te;
 mod wav;
 mod webp;
 mod xz;
@@ -135,6 +136,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(swf::SwfDissector),
         Box::new(pyc::PycDissector),
         Box::new(atari_prg::AtariPrgDissector),
+        Box::new(te::TeDissector),
         Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
         Box::new(pdf::PdfDissector),
