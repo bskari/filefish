@@ -6,6 +6,7 @@ mod gif;
 mod gzip;
 mod ico;
 mod jpeg;
+mod lx;
 mod macho;
 mod mp3;
 mod mp4;
@@ -80,6 +81,8 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
     vec![
         Box::new(elf::ElfDissector),
         Box::new(pe::PeDissector),
+        Box::new(lx::LeDissector),
+        Box::new(lx::LxDissector),
         Box::new(macho::MachoDissector),
         Box::new(wav::WavDissector),
         Box::new(mp4::Mp4Dissector),
