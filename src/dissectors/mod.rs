@@ -1,3 +1,4 @@
+mod amiga_hunk;
 mod atari_prg;
 mod bmp;
 mod bzip2;
@@ -137,6 +138,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(pyc::PycDissector),
         Box::new(atari_prg::AtariPrgDissector),
         Box::new(te::TeDissector),
+        Box::new(amiga_hunk::AmigaHunkDissector),
         Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
         Box::new(pdf::PdfDissector),
