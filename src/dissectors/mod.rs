@@ -1,5 +1,6 @@
 mod bmp;
 mod dex;
+mod dol;
 mod bzip2;
 mod elf;
 mod flac;
@@ -108,6 +109,10 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(webp::WebpDissector),
         Box::new(png::PngDissector),
         Box::new(bmp::BmpDissector),
+        // DOL has no magic, but nearly every DOL starts with 00 00 01 00 (text 0
+        // at offset 0x100), which is also the ICO magic. DOL's structural check
+        // is strict enough to go first.
+        Box::new(dol::DolDissector),
         Box::new(ico::IcoDissector),
         Box::new(psd::PsdDissector),
         Box::new(sqlite::SqliteDissector),
