@@ -1,3 +1,4 @@
+mod atari_prg;
 mod bmp;
 mod bzip2;
 mod dex;
@@ -133,6 +134,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(jpeg::JpegDissector),
         Box::new(swf::SwfDissector),
         Box::new(pyc::PycDissector),
+        Box::new(atari_prg::AtariPrgDissector),
         Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
         Box::new(pdf::PdfDissector),
