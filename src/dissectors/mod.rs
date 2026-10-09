@@ -15,6 +15,7 @@ mod matroska;
 mod midi;
 mod mp3;
 mod mp4;
+mod ne;
 mod ogg;
 mod pdf;
 mod pe;
@@ -95,6 +96,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
     vec![
         Box::new(elf::ElfDissector),
         Box::new(pe::PeDissector),
+        Box::new(ne::NeDissector),
         Box::new(macho::MachoDissector),
         Box::new(dex::DexDissector),
         Box::new(java_class::JavaClassDissector),
