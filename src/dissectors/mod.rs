@@ -15,6 +15,7 @@ mod midi;
 mod mp3;
 mod mp4;
 mod ogg;
+mod pdf;
 mod pe;
 mod png;
 mod pyc;
@@ -122,6 +123,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(pyc::PycDissector),
         Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
+        Box::new(pdf::PdfDissector),
     ]
 }
 
