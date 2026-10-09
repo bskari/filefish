@@ -20,6 +20,7 @@ mod pyc;
 mod psd;
 mod sevenzip;
 mod rpm;
+mod rar;
 mod sqlite;
 mod swf;
 mod tar;
@@ -111,6 +112,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(zip::ZipDissector),
         Box::new(xz::XzDissector),
         Box::new(sevenzip::SevenZipDissector),
+        Box::new(rar::RarDissector),
         Box::new(tar::TarDissector),
         Box::new(gif::GifDissector),
         Box::new(jpeg::JpegDissector),
