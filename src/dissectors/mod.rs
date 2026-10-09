@@ -14,6 +14,7 @@ mod mp4;
 mod ogg;
 mod pe;
 mod png;
+mod pyc;
 mod sqlite;
 mod swf;
 mod tar;
@@ -102,6 +103,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(gif::GifDissector),
         Box::new(jpeg::JpegDissector),
         Box::new(swf::SwfDissector),
+        Box::new(pyc::PycDissector),
         Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
     ]
