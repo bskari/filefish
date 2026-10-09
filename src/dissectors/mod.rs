@@ -1,4 +1,5 @@
 mod bmp;
+mod bzip2;
 mod elf;
 mod flac;
 mod generic;
@@ -90,6 +91,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(bmp::BmpDissector),
         Box::new(ico::IcoDissector),
         Box::new(sqlite::SqliteDissector),
+        Box::new(bzip2::Bzip2Dissector),
         Box::new(zip::ZipDissector),
         Box::new(tar::TarDissector),
         Box::new(gif::GifDissector),
