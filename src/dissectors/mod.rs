@@ -1,3 +1,4 @@
+mod amiga_hunk;
 mod bmp;
 mod elf;
 mod flac;
@@ -94,6 +95,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(tar::TarDissector),
         Box::new(gif::GifDissector),
         Box::new(jpeg::JpegDissector),
+        Box::new(amiga_hunk::AmigaHunkDissector),
         Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
     ]
