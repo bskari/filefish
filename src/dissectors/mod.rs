@@ -24,6 +24,7 @@ mod nro;
 mod ogg;
 mod pdf;
 mod pe;
+mod pif;
 mod png;
 mod psd;
 mod pyc;
@@ -128,6 +129,9 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(ico::IcoDissector),
         Box::new(psd::PsdDissector),
         Box::new(sqlite::SqliteDissector),
+        // PIF has no magic at offset 0, but "MICROSOFT PIFEX\0" at 0x171 is
+        // a 16-byte signature, as strong as any offset-0 magic.
+        Box::new(pif::PifDissector),
         Box::new(bzip2::Bzip2Dissector),
         Box::new(zip::ZipDissector),
         Box::new(xz::XzDissector),
