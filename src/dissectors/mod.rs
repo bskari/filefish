@@ -22,6 +22,7 @@ mod mp4;
 mod ne;
 mod nro;
 mod ogg;
+mod os360_object;
 mod pdf;
 mod pe;
 mod png;
@@ -141,6 +142,7 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(atari_prg::AtariPrgDissector),
         Box::new(te::TeDissector),
         Box::new(amiga_hunk::AmigaHunkDissector),
+        Box::new(os360_object::Os360ObjectDissector),
         Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
         Box::new(pdf::PdfDissector),
