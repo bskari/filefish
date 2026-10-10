@@ -5,6 +5,7 @@ mod bpg;
 mod bzip2;
 mod dex;
 mod dol;
+mod dos_com;
 mod elf;
 mod flac;
 mod generic;
@@ -150,6 +151,9 @@ fn dissectors() -> Vec<Box<dyn Dissector>> {
         Box::new(mp3::Mp3Dissector),
         Box::new(gzip::GzipDissector),
         Box::new(pdf::PdfDissector),
+        // DOS COM has no header or magic; its heuristic (entry jump/MOV plus
+        // INT 21h) is the weakest signature, so it goes last.
+        Box::new(dos_com::DosComDissector),
     ]
 }
 
