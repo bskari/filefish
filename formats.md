@@ -1,0 +1,25 @@
+- Microsoft DOS COM file
+- Microsoft DOS linear executable file
+- Microsoft PIF (program information file)
+- Microsoft NE (new executable)
+- Java class
+- Android Dalvik executable
+- compiled Python pyc
+- Shockwave flash swf
+- Nintendo Dolphin for GameCube, Wii
+- Nintendo NX (Nintendo Switch) relocatable object NRO
+- OS/360 Object File Format [BBCDIC] OFF
+- Tos - GEMDOS Program format [Atari ST] (1985)
+- Hunk - Amiga Hunk [Commodore AmigaOS] (1985)
+- TE - Terse Executable [UEFI] (2017?)
+- Wasm - WebAssembly (2017)
+- Bpg - Better/Bellard Portable Graphics (2014)
+- Psd - PhotoShop Document (1990)
+- Mkv - Matroska video [EBML] (2002)
+- 7zip archive
+- xv archive
+- RPM RedHat package manager
+- RAR - Roschal archive
+- bz2 - Bzip2
+- PDF - Portable document format
+- MIDI - Musical Instrument Digital Interface
