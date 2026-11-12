@@ -17,7 +17,9 @@
 #include <QMenuBar>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QLabel>
 #include <QScrollBar>
+#include <QStatusBar>
 #include <QSplitter>
 #include <QTreeWidget>
 
@@ -227,7 +229,30 @@ struct FileView
     }
 };
 
-void loadFile(const QString &path, QTreeWidget *tree, HexDataView *dataView, FileView &fileView)
+// Widgets in the bottom status bar. Each shows one piece of information.
+struct StatusLabels
+{
+    QLabel *size;
+    QLabel *selection;
+    QLabel *range;
+    QLabel *type;
+};
+
+void setSelectionStatus(const StatusLabels &st, quint64 start, quint64 end)
+{
+    if (end <= start) {
+        st.selection->setText("Selection: -");
+        st.range->setText("Range: -");
+        return;
+    }
+    st.selection->setText(QString("Selection: %1 bytes").arg(end - start));
+    // End is exclusive internally; show it inclusive, matching the hex pane's offsets.
+    st.range->setText(QString::asprintf("Range: 0x%llx-0x%llx (%llu-%llu)", static_cast<unsigned long long>(start),
+                                        static_cast<unsigned long long>(end - 1), static_cast<unsigned long long>(start),
+                                        static_cast<unsigned long long>(end - 1)));
+}
+
+void loadFile(const QString &path, QTreeWidget *tree, HexDataView *dataView, FileView &fileView, const StatusLabels &st)
 {
     if (path.isEmpty()) {
         return;
@@ -261,12 +286,17 @@ void loadFile(const QString &path, QTreeWidget *tree, HexDataView *dataView, Fil
 
     dataView->setData(std::move(fileInfo.data));
     dataView->highlightRange(0, 0);
+
+    const QString typeName = QString::fromStdString(std::string(fileInfo.file_type));
+    st.size->setText(QString("Size: %1 bytes").arg(fileInfo.size));
+    st.type->setText(QString("Type: %1 | Dissected as: %1").arg(typeName));
+    setSelectionStatus(st, 0, 0);
 }
 
-void openFile(QWidget *parent, QTreeWidget *tree, HexDataView *dataView, FileView &fileView)
+void openFile(QWidget *parent, QTreeWidget *tree, HexDataView *dataView, FileView &fileView, const StatusLabels &st)
 {
     const QString path = QFileDialog::getOpenFileName(parent, "Open File");
-    loadFile(path, tree, dataView, fileView);
+    loadFile(path, tree, dataView, fileView, st);
 }
 
 } // namespace
@@ -295,16 +325,24 @@ int run_app(rust::Vec<rust::String> args)
 
     window.setCentralWidget(splitter);
 
+    StatusLabels st{new QLabel("Size: -"), new QLabel("Selection: -"), new QLabel("Range: -"), new QLabel("Type: -")};
+    for (QLabel *label : {st.size, st.selection, st.range, st.type}) {
+        window.statusBar()->addWidget(label, label == st.type ? 1 : 0);
+        label->setContentsMargins(6, 0, 6, 0);
+    }
+
     FileView fileView;
 
-    QObject::connect(tree, &QTreeWidget::currentItemChanged, &window, [dataView](QTreeWidgetItem *current, QTreeWidgetItem *) {
+    QObject::connect(tree, &QTreeWidget::currentItemChanged, &window, [dataView, st](QTreeWidgetItem *current, QTreeWidgetItem *) {
         if (!current) {
             dataView->highlightRange(0, 0);
+            setSelectionStatus(st, 0, 0);
             return;
         }
         const quint64 start = current->data(0, Qt::UserRole).toULongLong();
         const quint64 end = current->data(0, Qt::UserRole + 1).toULongLong();
         dataView->highlightRange(start, end);
+        setSelectionStatus(st, start, end);
         dataView->scrollToRangeIfNeeded(start);
     });
 
@@ -329,14 +367,14 @@ int run_app(rust::Vec<rust::String> args)
     QMenu *fileMenu = window.menuBar()->addMenu("&File");
     QAction *openAction = fileMenu->addAction("&Open...");
     openAction->setShortcut(QKeySequence::Open);
-    QObject::connect(openAction, &QAction::triggered, &window, [&window, tree, dataView, &fileView]() {
-        openFile(&window, tree, dataView, fileView);
+    QObject::connect(openAction, &QAction::triggered, &window, [&window, tree, dataView, &fileView, st]() {
+        openFile(&window, tree, dataView, fileView, st);
     });
 
     window.show();
 
     if (!args.empty()) {
-        loadFile(QString::fromStdString(std::string(args[0])), tree, dataView, fileView);
+        loadFile(QString::fromStdString(std::string(args[0])), tree, dataView, fileView, st);
     }
 
     return app.exec();
