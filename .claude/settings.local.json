@@ -4,5 +4,47 @@
       "Bash(cargo build *)",
       "Bash(cargo test *)"
     ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/home/bs/Documents/firstmate/bin/fm-busy-event.sh' apply '/home/bs/Documents/firstmate/state' 'filefish-status-bar' busy --gen 'g1794524910.812893.16859' --source claude-hook --event user-prompt-submit 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "touch '/home/bs/Documents/firstmate/state/filefish-status-bar.turn-ended'; '/home/bs/Documents/firstmate/bin/fm-busy-event.sh' apply '/home/bs/Documents/firstmate/state' 'filefish-status-bar' idle --gen 'g1794524910.812893.16859' --source claude-hook --event stop 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/home/bs/Documents/firstmate/bin/fm-busy-event.sh' apply '/home/bs/Documents/firstmate/state' 'filefish-status-bar' idle --gen 'g1794524910.812893.16859' --source claude-hook --event stop-failure 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/home/bs/Documents/firstmate/bin/fm-busy-event.sh' apply '/home/bs/Documents/firstmate/state' 'filefish-status-bar' idle --gen 'g1794524910.812893.16859' --source claude-hook --event session-end 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
   }
 }
